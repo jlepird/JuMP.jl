@@ -22,7 +22,7 @@ importall Base
 
 export
 # Objects
-    Model, Variable, AffExpr, QuadExpr, LinearConstraint, QuadConstraint, MultivarDict,
+    Model, Variable, AffExpr, QuadExpr, MatrixExpr, LinearConstraint, QuadConstraint, MatrixConstraint, MultivarDict,
 # Functions
     # Relevant to all
     print,show,
@@ -58,6 +58,7 @@ type Model
     
     linconstr#::Vector{LinearConstraint}
     quadconstr
+    matrixconstr
     
     # Column data
     numCols::Int
@@ -93,7 +94,7 @@ function Model(sense::Symbol;lpsolver=MathProgBase.defaultLPsolver,mipsolver=Mat
     end
     if solver == nothing
         # use default solvers
-        Model(QuadExpr(),sense,LinearConstraint[], QuadConstraint[],
+        Model(QuadExpr(),sense,LinearConstraint[], QuadConstraint[], MatrixConstraint[],
               0,String[],Float64[],Float64[],Int[],
               0,Float64[],Float64[],Float64[],nothing,MathProgBase.MissingSolver("",Symbol[]),true,
               nothing,nothing,JuMPDict[])
@@ -102,7 +103,7 @@ function Model(sense::Symbol;lpsolver=MathProgBase.defaultLPsolver,mipsolver=Mat
             error("solver argument ($solver) must be an AbstractMathProgSolver")
         end
         # user-provided solver must support problem class
-        Model(QuadExpr(),sense,LinearConstraint[], QuadConstraint[],
+        Model(QuadExpr(),sense,LinearConstraint[], QuadConstraint[], MatrixConstraint[],
               0,String[],Float64[],Float64[],Int[],
               0,Float64[],Float64[],Float64[],nothing,solver,true,
               nothing,nothing,JuMPDict[])
@@ -116,7 +117,7 @@ function Model(;solver=nothing,lpsolver=MathProgBase.defaultLPsolver,mipsolver=M
     
     if solver == nothing
         # use default solvers
-        Model(QuadExpr(),:Min,LinearConstraint[], QuadConstraint[],
+        Model(QuadExpr(),:Min,LinearConstraint[], QuadConstraint[], MatrixConstraint[],
               0,String[],Float64[],Float64[],Int[],
               0,Float64[],Float64[],Float64[],nothing,MathProgBase.MissingSolver("",Symbol[]),true,
               nothing,nothing,JuMPDict[])
@@ -125,7 +126,7 @@ function Model(;solver=nothing,lpsolver=MathProgBase.defaultLPsolver,mipsolver=M
             error("solver argument ($solver) must be an AbstractMathProgSolver")
         end
         # user-provided solver must support problem class
-        Model(QuadExpr(),:Min,LinearConstraint[], QuadConstraint[],
+        Model(QuadExpr(),:Min,LinearConstraint[], QuadConstraint[], MatrixConstraint[],
               0,String[],Float64[],Float64[],Int[],
               0,Float64[],Float64[],Float64[],nothing,solver,true,
               nothing,nothing,JuMPDict[])
@@ -694,6 +695,7 @@ include("solvers.jl")
 include("macros.jl")
 
 include("callbacks.jl")
+include("sdp.jl")
 
 ##########################################################################
 end
