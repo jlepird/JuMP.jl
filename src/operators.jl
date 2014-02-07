@@ -30,7 +30,6 @@
 (*)(lhs::Number, rhs::QuadExpr) = QuadExpr(copy(rhs.qvars1),copy(rhs.qvars2), lhs*rhs.qcoeffs ,lhs*rhs.aff)
 (/)(lhs::Number, rhs::QuadExpr) = error("Cannot divide by a quadratic expression")
 
-
 # Variable
 # Variable--Number
 (+)(lhs::Variable, rhs::Number) = (+)( rhs,lhs)
@@ -59,7 +58,11 @@ end
 (-)(v::Variable, q::QuadExpr) = QuadExpr(copy(q.qvars1),copy(q.qvars2),    -q.qcoeffs ,v-q.aff)
 (*)(v::Variable, q::QuadExpr) = error("Cannot multiply a variable by a quadratic expression")
 (/)(v::Variable, q::QuadExpr) = error("Cannot divide a variable by a quadratic expression")
-
+# Variable--MatrixExpr
+(+)(lhs::Variable, rhs::MatrixExpr) = error("Cannot add a scalar variable and a matrix expression") #TODO: make this work w/ 1x1 matrices
+(-)(lhs::Variable, rhs::MatrixExpr) = error("Cannot subtract a matrix expression from a scalar variable")
+(*)(lhs::Variable, rhs::MatrixExpr) = error("Cannot multiply a scalar variable and a matrix expression")
+(/)(lhs::Variable, rhs::MatrixExpr) = error("Cannot divide a scalar variable by a matrix expression")
 
 # AffExpr
 # AffExpr--Number
@@ -135,7 +138,11 @@ end
 (-)(a::AffExpr, q::QuadExpr) = QuadExpr(copy(q.qvars1),copy(q.qvars2),    -q.qcoeffs ,a-q.aff)
 (*)(a::AffExpr, q::QuadExpr) = error("Cannot multiply an aff. expression by a quadratic expression")
 (/)(a::AffExpr, q::QuadExpr) = error("Cannot divide an aff. expression by a quadratic expression")
-
+# AffExpr--MatrixExpr
+(+)(lhs::AffExpr, rhs::MatrixExpr) = error("Cannot add a scalar expression and a matrix expression") #TODO: make this work w/ 1x1 matrices
+(-)(lhs::AffExpr, rhs::MatrixExpr) = error("Cannot subtract a matrix expression from a scalar expression")
+(*)(lhs::AffExpr, rhs::MatrixExpr) = error("Cannot multiply a scalar expression and a matrix expression")
+(/)(lhs::AffExpr, rhs::MatrixExpr) = error("Cannot divide a scalar expression by a matrix expression")
 
 # QuadExpr
 # QuadExpr--Number
@@ -164,6 +171,11 @@ end
                                                                                      q1.aff - q2.aff)
 (*)(q1::QuadExpr, q2::QuadExpr) = error("Cannot multiply two quadratic expressions")
 (/)(q1::QuadExpr, q2::QuadExpr) = error("Cannot divide a quadratic expression by a quadratic expression")
+# QuadExpr--MatrixExpr
+(+)(lhs::QuadExpr, rhs::MatrixExpr) = error("Cannot add a scalar quadratic expression and a matrix expression") #TODO: make this work w/ 1x1 matrices
+(-)(lhs::QuadExpr, rhs::MatrixExpr) = error("Cannot subtract a matrix expression from a scalar quadratic expression")
+(*)(lhs::QuadExpr, rhs::MatrixExpr) = error("Cannot multiply a scalar quadratic expression and a matrix expression")
+(/)(lhs::QuadExpr, rhs::MatrixExpr) = error("Cannot divide a scalar quadratic expression by a matrix expression")
 
 # LinearConstraint
 # Number--???

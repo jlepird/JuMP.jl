@@ -9,7 +9,7 @@ getindex(d::MatrixVar) = getindex(d.innerArray)
 setindex!(d::MatrixVar,val) = setindex!(d.innerArray,val)
 
 typealias MatrixExpr GenericAffExpr{Matrix{Float64},MatrixVar}
-MatrixExpr() = AffExpr(MatrixVar[],Float64[],Float64[])
+MatrixExpr(n::Int) = MatrixExpr(MatrixVar[],Matrix{Float64}[],zeros(n,n))
 
 type MatrixConstraint <: JuMPConstraint
     terms::MatrixExpr

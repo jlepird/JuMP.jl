@@ -685,6 +685,8 @@ function Variable(m::Model,lower::Number,upper::Number,cat::Int,objcoef::Number,
 end
 
 ##########################################################################
+include("sdp.jl")
+
 # Operator overloads
 include("operators.jl")
 # Writers - we support MPS (MILP + QuadObj), LP (MILP)
@@ -695,7 +697,6 @@ include("solvers.jl")
 include("macros.jl")
 
 include("callbacks.jl")
-include("sdp.jl")
 
 ##########################################################################
 end
