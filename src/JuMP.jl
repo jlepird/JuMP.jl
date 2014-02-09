@@ -22,7 +22,7 @@ importall Base
 
 export
 # Objects
-    Model, Variable, AffExpr, QuadExpr, MatrixExpr, LinearConstraint, QuadConstraint, MatrixConstraint, MultivarDict,
+    Model, Variable, MatrixVar, AffExpr, QuadExpr, MatrixExpr, LinearConstraint, QuadConstraint, MatrixConstraint, MultivarDict,
 # Functions
     # Relevant to all
     print,show,
