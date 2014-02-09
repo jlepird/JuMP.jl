@@ -32,7 +32,7 @@
 # Number--MatrixVar
 (+)(lhs::Number, rhs::MatrixVar) = error("Cannot add a scalar and a matrix variable")
 (-)(lhs::Number, rhs::MatrixVar) = error("Cannot subtract a scalar and a matrix variable")
-(*)(lhs::Number, rhs::MatrixVar) = MatrixExpr([rhs], lhs*one(rhs), zero(rhs))
+(*)(lhs::Number, rhs::MatrixVar) = MatrixExpr([rhs], lhs*Array[eye(rhs)], zero(rhs))
 (/)(lhs::Number, rhs::MatrixVar) = error("Cannot divide a scalar by a matrix variable")
 # Number--MatrixExpr
 (+)(lhs::Number, rhs::MatrixExpr)  = error("Cannot add a scalar to a matrix expression")
@@ -207,15 +207,15 @@ end
 # Matrix--MatrixVar
 function (+)(lhs::Matrix, rhs::MatrixVar)
     (size(lhs) == size(rhs)) || error("Cannot add matrices of unequal size")
-    MatrixExpr([rhs], one(rhs), lhs)
+    MatrixExpr([rhs], Array[eye(rhs)], lhs)
 end
 function (-)(lhs::Matrix, rhs::MatrixVar)
     (size(lhs) == size(rhs)) || error("Cannot subtract matrices of unequal size")
-    MatrixExpr([rhs], -one(rhs), lhs)
+    MatrixExpr([rhs], -Array[eye(rhs)], lhs)
 end
 function (*)(lhs::Matrix, rhs::MatrixVar)
     (size(lhs) == size(rhs)) || error("Cannot multiply matrices of incompatible sizes")
-    MatrixEpxr([rhs], lhs, zero(rhs))
+    MatrixEpxr([rhs], Array[eye(lhs)], zero(rhs))
 end
 (/)(lhs::MatrixVar, rhs::Matrix) = error("Cannot divide matrices")
 # MatrixVar
@@ -227,11 +227,11 @@ end
 # MatrixVar--Matrix
 function (+)(lhs::MatrixVar, rhs::Matrix)
     (size(lhs) == size(rhs)) || error("Cannot add matrices of unequal size")
-    MatrixExpr([lhs], one(lhs), rhs)
+    MatrixExpr([lhs], Array[eye(lhs)], rhs)
 end
 function (-)(lhs::MatrixVar, rhs::Matrix)
     (size(lhs) == size(rhs)) || error("Cannot subtract matrices of unequal size")
-    MatrixExpr([lhs], one(lhs), -rhs)
+    MatrixExpr([lhs], Array[eye(lhs)], -rhs)
 end
 (*)(lhs::MatrixVar, rhs::Matrix) = error("Post-multiplying a matrix variable with a matrix is not yet supported")
 (/)(lhs::MatrixVar, rhs::Matrix) = error("Cannot divide matrices")
@@ -253,17 +253,17 @@ end
 # MatrixVar--MatrixVar
 function (+)(lhs::MatrixVar, rhs::MatrixVar)
     (size(lhs) == size(rhs)) || error("Cannot add matrix variables of unequal size")
-    MatrixExpr([lhs,rhs],[one(lhs),one(rhs)], zero(lhs))
+    MatrixExpr([lhs,rhs],Array[eye(lhs),eye(rhs)], zero(lhs))
 end
 function (-)(lhs::MatrixVar, rhs::MatrixVar)
     (size(lhs) == size(rhs)) || error("Cannot subtract matrix variables of unequal size")
-    MatrixExpr([lhs,rhs],[one(lhs),-one(rhs)], zero(lhs))
+    MatrixExpr([lhs,rhs],Array[eye(lhs),-eye(rhs)], zero(lhs))
 end
 (*)(lhs::MatrixVar, rhs::MatrixVar) = error("Cannot multiply matrix variables")
 (/)(lhs::MatrixVar, rhs::MatrixVar) = error("Cannot divide matrix variables")
 # MatrixVar--MatrixExpr
-(+)(lhs::MatrixVar, rhs::MatrixExpr) = MatrixExpr(vcat(rhs.vars,lhs),vcat( rhs.coeffs,one(lhs)), rhs.constant)
-(-)(lhs::MatrixVar, rhs::MatrixExpr) = MatrixExpr(vcat(rhs.vars,lhs),vcat(-rhs.coeffs,one(lhs)),-rhs.constant)
+(+)(lhs::MatrixVar, rhs::MatrixExpr) = MatrixExpr(vcat(rhs.vars,lhs),Array[ rhs.coeffs...,eye(lhs)], rhs.constant)
+(-)(lhs::MatrixVar, rhs::MatrixExpr) = MatrixExpr(vcat(rhs.vars,lhs),Array[-rhs.coeffs...,eye(lhs)],-rhs.constant)
 (*)(lhs::MatrixVar, rhs::MatrixExpr) = error("Cannot multiply a matrix variable and a matrix expression")
 (/)(lhs::MatrixVar, rhs::MatrixExpr) = error("Cannot divide a matrix variable by a matrix expression")
 
@@ -302,17 +302,17 @@ end
 # MatrixExpr--MatrixVar
 function (+)(lhs::MatrixExpr, rhs::MatrixVar)
     (size(lhs.constant) == size(rhs)) || error("Cannot add matrix variables of unequal size")
-    MatrixExpr(vcat(lhs.vars,rhs), vcat(lhs.coeffs,one(rhs)), lhs.constant)
+    MatrixExpr(vcat(lhs.vars,rhs), Array[lhs.coeffs...,eye(rhs)], lhs.constant)
 end
 function (-)(lhs::MatrixExpr, rhs::MatrixVar)
     (size(lhs.constant) == size(rhs)) || error("Cannot subtract matrix variables of unequal size")
-    MatrixExpr(vcat(lhs.vars,rhs), vcat(lhs.coeffs,-one(rhs)), lhs.constant)
+    MatrixExpr(vcat(lhs.vars,rhs), Array[lhs.coeffs...,-eye(rhs)], lhs.constant)
 end
 (*)(lhs::MatrixExpr, rhs::MatrixVar) = error("Cannot multiply matrix variables")
 (/)(lhs::MatrixExpr, rhs::MatrixVar) = error("Cannot divide matrix variables")
 # MatrixExpr--MatrixExpr
-(+)(lhs::MatrixExpr, rhs::MatrixExpr) = MatrixExpr(vcat(lhs.vars,rhs.vars),vcat(lhs.coeffs, rhs.coeffs),lhs.constant+rhs.constant)
-(-)(lhs::MatrixExpr, rhs::MatrixExpr) = MatrixExpr(vcat(lhs.vars,rhs.vars),vcat(lhs.coeffs,-rhs.coeffs),lhs.constant-rhs.constant)
+(+)(lhs::MatrixExpr, rhs::MatrixExpr) = MatrixExpr(vcat(lhs.vars,rhs.vars),Array[lhs.coeffs..., rhs.coeffs...],lhs.constant+rhs.constant)
+(-)(lhs::MatrixExpr, rhs::MatrixExpr) = MatrixExpr(vcat(lhs.vars,rhs.vars),Array[lhs.coeffs...,-rhs.coeffs...],lhs.constant-rhs.constant)
 (*)(lhs::MatrixExpr, rhs::MatrixExpr) = error("Cannot multiply a matrix variable and a matrix expression")
 (/)(lhs::MatrixExpr, rhs::MatrixExpr) = error("Cannot divide a matrix variable by a matrix expression")
 
@@ -379,15 +379,15 @@ end
 # Matrix--MatrixVar
 function (<=)(lhs::Matrix, rhs::MatrixVar)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr([rhs], -one(rhs), lhs), :<=)
+    MatrixConstraint(MatrixExpr([rhs], -Array[eye(rhs)], lhs), :<=)
 end
 function (==)(lhs::Matrix, rhs::MatrixVar)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr([rhs], -one(rhs), lhs), :(==))
+    MatrixConstraint(MatrixExpr([rhs], -Array[eye(rhs)], lhs), :(==))
 end
 function (>=)(lhs::Matrix, rhs::MatrixVar)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr([rhs], -one(rhs), lhs), :>=)
+    MatrixConstraint(MatrixExpr([rhs], -Array[eye(rhs)], lhs), :>=)
 end
 # Matrix--MatrixExpr
 function (<=)(lhs::Matrix, rhs::MatrixExpr)
@@ -407,41 +407,41 @@ end
 # MatrixVar--Matrix
 function (<=)(lhs::MatrixVar, rhs::Matrix)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr([lhs], one(lhs), -rhs), :<=)
+    MatrixConstraint(MatrixExpr([lhs], Array[eye(lhs)], -rhs), :<=)
 end
 function (==)(lhs::MatrixVar, rhs::Matrix)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr([lhs], one(lhs), -rhs), :(==))
+    MatrixConstraint(MatrixExpr([lhs], Array[eye(lhs)], -rhs), :(==))
 end
 function (>=)(lhs::MatrixVar, rhs::Matrix)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr([lhs], one(lhs), -rhs), :>=)
+    MatrixConstraint(MatrixExpr([lhs], Array[eye(lhs)], -rhs), :>=)
 end
 # MatrixVar--MatrixVar
 function (<=)(lhs::MatrixVar, rhs::MatrixVar)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr([lhs,rhs], [one(lhs),-one(rhs)], zero(lhs)), :<=)
+    MatrixConstraint(MatrixExpr([lhs,rhs], vcat(eye(lhs),-eye(rhs)), zero(lhs)), :<=)
 end
 function (==)(lhs::MatrixVar, rhs::MatrixVar)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr([lhs,rhs], [one(lhs),-one(rhs)], zero(lhs)), :(==))
+    MatrixConstraint(MatrixExpr([lhs,rhs], vcat(eye(lhs),-eye(rhs)), zero(lhs)), :(==))
 end
 function (>=)(lhs::MatrixVar, rhs::MatrixVar)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr([lhs,rhs], [one(lhs),-one(rhs)], zero(lhs)), :>=)
+    MatrixConstraint(MatrixExpr([lhs,rhs], vcat(eye(lhs),-eye(rhs)), zero(lhs)), :>=)
 end
 # MatrixVar--MatrixExpr
 function (<=)(lhs::MatrixVar, rhs::MatrixExpr)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr(vcat(rhs.vars,lhs), vcat(-rhs.coeffs,one(lhs)), -rhs.constant), :<=)
+    MatrixConstraint(MatrixExpr(vcat(rhs.vars,lhs), Array[-rhs.coeffs...,eye(lhs)], -rhs.constant), :<=)
 end
 function (==)(lhs::MatrixVar, rhs::MatrixExpr)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr(vcat(rhs.vars,lhs), vcat(-rhs.coeffs,one(lhs)), -rhs.constant), :(==))
+    MatrixConstraint(MatrixExpr(vcat(rhs.vars,lhs), Array[-rhs.coeffs...,eye(lhs)], -rhs.constant), :(==))
 end
 function (>=)(lhs::MatrixVar, rhs::MatrixExpr)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr(vcat(rhs.vars,lhs), vcat(-rhs.coeffs,one(lhs)), -rhs.constant), :>=)
+    MatrixConstraint(MatrixExpr(vcat(rhs.vars,lhs), Array[-rhs.coeffs...,eye(lhs)], -rhs.constant), :>=)
 end
 
 # MatrixExpr
@@ -474,13 +474,13 @@ end
 # MatrixExpr--MatrixExpr
 function (<=)(lhs::MatrixExpr, rhs::MatrixExpr)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr(vcat(lhs.vars,rhs.vars), vcat(lhs.vars,rhs.vars), lhs.constant-rhs.constant), :<=)
+    MatrixConstraint(MatrixExpr(vcat(lhs.vars,rhs.vars), Array[lhs.coeffs...,rhs.coeffs...], lhs.constant-rhs.constant), :<=)
 end
 function (==)(lhs::MatrixExpr, rhs::MatrixExpr)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr(vcat(lhs.vars,rhs.vars), vcat(lhs.vars,rhs.vars), lhs.constant-rhs.constant), :(==))
+    MatrixConstraint(MatrixExpr(vcat(lhs.vars,rhs.vars), Array[lhs.coeffs...,rhs.coeffs...], lhs.constant-rhs.constant), :(==))
 end
 function (>=)(lhs::MatrixExpr, rhs::MatrixExpr)
     (size(lhs) == size(rhs)) || error("Cannot compare matrices of different sizes")
-    MatrixConstraint(MatrixExpr(vcat(lhs.vars,rhs.vars), vcat(lhs.vars,rhs.vars), lhs.constant-rhs.constant), :>=)
+    MatrixConstraint(MatrixExpr(vcat(lhs.vars,rhs.vars), Array[lhs.coeffs...,rhs.coeffs...], lhs.constant-rhs.constant), :>=)
 end

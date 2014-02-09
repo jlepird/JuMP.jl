@@ -3,21 +3,37 @@
 abstract MatrixVar
 
 type MatrixVarExplicit <: MatrixVar
-  innerArray::Array{Variable,2}
-  name::String
+    m::Model
+    innerArray::Array{Variable,2}
 end
 
 type MatrixVarImplicit <: MatrixVar
-  dim::Int
-  name::String
+    m::Model
+    dim::Int
 end
 
-getindex(d::MatrixVar) = getindex(d.innerArray)
-setindex!(d::MatrixVar,val) = setindex!(d.innerArray,val)
+show(io::IO,d::MatrixVar) = show(io, [["$(getName(d))[$i,$j]" for i in 1:size(d)] for j in 1:size(d)])
 
-size(d::MatrixVar) = size(d.innerArray)
-one(d::MatrixVar) = one(d.innerArray)
-zero(d::MatrixVar) = zero(d.innerArray)
+getindex(d::MatrixVarExplicit) = getindex(d.innerArray)
+setindex!(d::MatrixVarExplicit,val) = setindex!(d.innerArray,val)
+
+# Use this to work with elements of a MatrixVar maybe?
+# Maybe extend to ranges so you can add constraints on blocks?
+type MatrixVarImplicitRef
+    var::MatrixVarImplicit
+    x::Int
+    y::Int
+end
+
+getindex(d::MatrixVarImplicit, x::Int, y::Int) = MatrixVarImplicitRef(d,x,y)
+
+size(d::MatrixVarExplicit) = size(d.innerArray)
+eye(d::MatrixVarExplicit) = eye(d.innerArray)
+zero(d::MatrixVarExplicit) = zero(d.innerArray)
+
+size(d::MatrixVarImplicit) = (d.dim,d.dim)
+eye(d::MatrixVarImplicit) = eye(d.dim)
+zero(d::MatrixVarImplicit) = zeros(d.dim,d.dim)
 
 typealias MatrixExpr GenericAffExpr{Matrix{Float64},MatrixVar}
 MatrixExpr(n::Int) = MatrixExpr(MatrixVar[],Matrix{Float64}[],zeros(n,n))
@@ -26,6 +42,30 @@ type MatrixConstraint <: JuMPConstraint
     terms::MatrixExpr
     sense::Symbol
 end
+
+type MatrixFunctionExpr
+    vars
+    constant::Real
+end
+
+type MatrixFunctionConstraint <: JuMPConstraint
+    expr::MatrixFunctionExpr
+    sense::Symbol
+end
+
+# some operation on MatrixExpr (e.g. norm, trace, etc.). Must return a scalar.
+abstract MatrixFunction
+
+type MatrixTrace <: MatrixFunction
+    expr::MatrixExpr
+end
+
+type MatrixNorm <: MatrixFunction
+    expr::MatrixExpr
+end
+
+trace(c::MatrixExpr) = MatrixTrace(c)
+norm(c::MatrixExpr) = MatrixNorm(c)
 
 function addConstraint(m::Model, c::MatrixConstraint)
     push!(m.matrixconstr,c)
@@ -36,4 +76,6 @@ end
 ## * inverse
 ## * trace
 ## * transpose
+## * norm
 ## * concatenation (e.g. [AX I; I X])
+## Need to handle linear constraints on elements of MatrixVar (see SDPA docs 9.1)
