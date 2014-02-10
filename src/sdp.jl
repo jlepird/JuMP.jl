@@ -12,20 +12,29 @@ type MatrixVarImplicit <: MatrixVar
     dim::Int
 end
 
-show(io::IO,d::MatrixVar) = show(io, [["$(getName(d))[$i,$j]" for i in 1:size(d)] for j in 1:size(d)])
+# need to figure out how to get variable name here...
+function show(io::IO,d::MatrixVar) 
+    arr = Array(String, size(d))
+    for i in 1:size(d)[1]
+        for j in 1:size(d)[2]
+            arr[i,j] = "X[$i,$j]"
+        end
+    end
+    show(io, arr)
+end
 
 getindex(d::MatrixVarExplicit) = getindex(d.innerArray)
 setindex!(d::MatrixVarExplicit,val) = setindex!(d.innerArray,val)
 
 # Use this to work with elements of a MatrixVar maybe?
 # Maybe extend to ranges so you can add constraints on blocks?
-type MatrixVarImplicitRef
+type MatrixVarRef
     var::MatrixVarImplicit
     x::Int
     y::Int
 end
 
-getindex(d::MatrixVarImplicit, x::Int, y::Int) = MatrixVarImplicitRef(d,x,y)
+getindex(d::MatrixVarImplicit, x::Int, y::Int) = MatrixVarRef(d,x,y)
 
 size(d::MatrixVarExplicit) = size(d.innerArray)
 eye(d::MatrixVarExplicit) = eye(d.innerArray)
@@ -72,10 +81,20 @@ function addConstraint(m::Model, c::MatrixConstraint)
     return ConstraintRef{MatrixConstraint}(m,length(m.matrixconstr))
 end
 
+# function hcat(args::)
+
+# end
+
+# function vcat()
+
+# end
+
+# function hvcat()
+
+# end
+
 ## operators we need:
-## * inverse
 ## * trace
-## * transpose
 ## * norm
 ## * concatenation (e.g. [AX I; I X])
 ## Need to handle linear constraints on elements of MatrixVar (see SDPA docs 9.1)
