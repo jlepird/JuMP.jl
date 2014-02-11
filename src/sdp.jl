@@ -44,8 +44,21 @@ size(d::MatrixVarImplicit) = (d.dim,d.dim)
 eye(d::MatrixVarImplicit) = eye(d.dim)
 zero(d::MatrixVarImplicit) = zeros(d.dim,d.dim)
 
-typealias MatrixExpr GenericAffExpr{Matrix{Float64},MatrixVar}
-MatrixExpr(n::Int) = MatrixExpr(MatrixVar[],Matrix{Float64}[],zeros(n,n))
+type MatrixSparseExpr
+    vars::Vector{MatrixVar}
+    pre::Vector{SparseMatrixCSC{Float64}}
+    post::Vector{SparseMatrixCSC{Float64}}
+    constant::SparseMatrixCSC{Float64}
+end
+
+type MatrixExpr
+    vars::Vector{MatrixVar}
+    pre::Vector{Matrix{Float64}}
+    post::Vector{Matrix{Float64}}
+    constant::Matrix{Float64}
+end
+
+MatrixExpr(n::Int) = MatrixExpr(MatrixVar[],Matrix{Float64}[],Matrix{Float64}[],zeros(n,n))
 
 type MatrixConstraint <: JuMPConstraint
     terms::MatrixExpr
