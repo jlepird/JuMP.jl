@@ -12,6 +12,9 @@ type MatrixVarImplicit <: MatrixVar
     dim::Int
 end
 
+transpose(a::MatrixVar)  = a
+ctranspose(a::MatrixVar) = a
+
 # need to figure out how to get variable name here...
 function show(io::IO,d::MatrixVar) 
     arr = Array(String, size(d))
@@ -56,9 +59,16 @@ type MatrixExpr
     pre::Vector{Matrix{Float64}}
     post::Vector{Matrix{Float64}}
     constant::Matrix{Float64}
-end
+end # TODO: check that all matrices are symmetric!
 
 MatrixExpr(n::Int) = MatrixExpr(MatrixVar[],Matrix{Float64}[],Matrix{Float64}[],zeros(n,n))
+
+transpose(d::MatrixExpr)  = MatrixExpr(copy(d.vars), copy(d.post), copy(d.pre), d.constant)
+ctranspose(d::MatrixExpr) = MatrixExpr(copy(d.vars), copy(d.post), copy(d.pre), d.constant)
+
+type NestedMatrixExpr
+    arr::Matrix{NestedMatrixExpr}
+end
 
 type MatrixConstraint <: JuMPConstraint
     terms::MatrixExpr
