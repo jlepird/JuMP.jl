@@ -10,6 +10,8 @@ module JuMP
 using MathProgBase
 using MathProgBase.MathProgSolverInterface
 
+using ReverseDiffSparse
+
 importall Base
 
 export
@@ -138,10 +140,12 @@ end
 ###############################################################################
 # Variable class
 # Doesn't actually do much, just a pointer back to the model
-type Variable
+type Variable <: Placeholder
     m::Model
     col::Int
 end
+
+getindex(x::Variable) = x.col
 
 function Variable(m::Model,lower::Number,upper::Number,cat::Int,name::String)
     m.numCols += 1
