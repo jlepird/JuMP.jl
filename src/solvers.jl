@@ -228,3 +228,5 @@ function solveMIP(m::Model)
 
     return stat
 end
+
+include("ipopt.jl")

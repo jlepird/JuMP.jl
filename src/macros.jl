@@ -301,3 +301,15 @@ macro defConstrRef(var)
         return code
     end
 end
+
+macro setNLObjective(m, sense, x)
+    if sense == :Min || sense == :Max
+        sense = Expr(:quote,sense)
+    end
+    quote
+        setObjectiveSense($(esc(m)), $(esc(sense)))
+        ex = @processNLExpr($(esc(x)))
+        $(esc(m)).nlobj = ex
+        $(esc(m)).obj = QuadExpr()
+    end
+end 

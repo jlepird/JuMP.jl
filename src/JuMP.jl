@@ -32,7 +32,8 @@ export
     
 # Macros and support functions
     @addConstraint, @defVar, 
-    @defConstrRef, @setObjective, addToExpression
+    @defConstrRef, @setObjective, addToExpression,
+    @setNLObjective
 
 include("JuMPDict.jl")
 include("utils.jl")
@@ -77,6 +78,8 @@ type Model
 
     # JuMPDict list
     dictList::Vector
+    # Nonlinear attributes
+    nlobj
 end
 
 # Default constructor
@@ -86,7 +89,7 @@ function Model(;solver=nothing)
         Model(QuadExpr(),:Min,LinearConstraint[], QuadConstraint[],
               0,String[],Float64[],Float64[],Int[],
               0,Float64[],Float64[],Float64[],nothing,MathProgBase.MissingSolver("",Symbol[]),true,
-              nothing,nothing,JuMPDict[])
+              nothing,nothing,JuMPDict[],nothing)
     else
         if !isa(solver,AbstractMathProgSolver)
             error("solver argument ($solver) must be an AbstractMathProgSolver")
@@ -95,7 +98,7 @@ function Model(;solver=nothing)
         Model(QuadExpr(),:Min,LinearConstraint[], QuadConstraint[],
               0,String[],Float64[],Float64[],Int[],
               0,Float64[],Float64[],Float64[],nothing,solver,true,
-              nothing,nothing,JuMPDict[])
+              nothing,nothing,JuMPDict[],nothing)
     end
 end
 
