@@ -307,9 +307,10 @@ macro setNLObjective(m, sense, x)
         sense = Expr(:quote,sense)
     end
     quote
+        initNLP($(esc(m)))
         setObjectiveSense($(esc(m)), $(esc(sense)))
         ex = @processNLExpr($(esc(x)))
-        $(esc(m)).nlobj = ex
+        $(esc(m)).ext[:NLP].nlobj = ex
         $(esc(m)).obj = QuadExpr()
     end
 end 

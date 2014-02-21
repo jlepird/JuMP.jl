@@ -1,3 +1,15 @@
+type NLPData
+    nlobj
+end
+
+NLPData() = NLPData(nothing)
+
+function initNLP(m::Model)
+    if !haskey(m.ext, :NLP)
+        m.ext[:NLP] = NLPData()
+    end
+end
+
 using Ipopt
 
 function solveIpopt(m::Model)
@@ -8,11 +20,13 @@ function solveIpopt(m::Model)
         end
     end
 
-    @assert isa(m.nlobj, ReverseDiffSparse.SymbolicOutput)
+    @assert haskey(m.ext, :NLP)
+    nldata = m.ext[:NLP]
+    @assert isa(nldata.nlobj, ReverseDiffSparse.SymbolicOutput)
     @assert length(m.obj.qvars1) == 0 && length(m.obj.aff.vars) == 0
     @assert length(m.quadconstr) == 0
     @assert m.objSense == :Min
-    fg = genfgrad_simple(m.nlobj)
+    fg = genfgrad_simple(nldata.nlobj)
 
     _, rowlb, rowub = prepProblemBounds(m)
     A = prepConstrMatrix(m)
@@ -54,7 +68,7 @@ function solveIpopt(m::Model)
         end
     end
 
-    hmat, hfunc = gen_hessian_sparse_mat(m.nlobj)
+    hmat, hfunc = gen_hessian_sparse_mat(nldata.nlobj)
 
     function eval_h(
         x::Vector{Float64},         # Current solution

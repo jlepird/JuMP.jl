@@ -78,8 +78,6 @@ type Model
 
     # JuMPDict list
     dictList::Vector
-    # Nonlinear attributes
-    nlobj
 
     # Extension dictionary - e.g. for robust
     # Extensions should define a type to hold information particular to
@@ -95,11 +93,7 @@ function Model(;solver=nothing)
         Model(QuadExpr(),:Min,LinearConstraint[], QuadConstraint[],
               0,String[],Float64[],Float64[],Int[],
               0,Float64[],Float64[],Float64[],nothing,MathProgBase.MissingSolver("",Symbol[]),true,
-<<<<<<< HEAD
-              nothing,nothing,JuMPDict[],nothing)
-=======
               nothing,nothing,JuMPDict[],Dict{Symbol,Any}())
->>>>>>> c5dbb03bb9259fdd2ef6812f51e3b8a160a2f950
     else
         if !isa(solver,AbstractMathProgSolver)
             error("solver argument ($solver) must be an AbstractMathProgSolver")
@@ -108,11 +102,7 @@ function Model(;solver=nothing)
         Model(QuadExpr(),:Min,LinearConstraint[], QuadConstraint[],
               0,String[],Float64[],Float64[],Int[],
               0,Float64[],Float64[],Float64[],nothing,solver,true,
-<<<<<<< HEAD
-              nothing,nothing,JuMPDict[],nothing)
-=======
               nothing,nothing,JuMPDict[],Dict{Symbol,Any}())
->>>>>>> c5dbb03bb9259fdd2ef6812f51e3b8a160a2f950
     end
 end
 
@@ -452,6 +442,8 @@ include("macros.jl")
 include("callbacks.jl")
 # Pretty-printing, including IJulia
 include("print.jl")
+# Nonlinear-specific code
+include("nlp.jl")
 
 ##########################################################################
 end
