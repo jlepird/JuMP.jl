@@ -47,3 +47,28 @@ let
 end
 
 
+# hs071
+let
+    # min x1 * x4 * (x1 + x2 + x3) + x3
+    # st  x1 * x2 * x3 * x4 >= 25
+    #     x1^2 + x2^2 + x3^2 + x4^2 = 40
+    #     1 <= x1, x2, x3, x4 <= 5
+    # Start at (1,5,5,1)
+    # End at (1.000..., 4.743..., 3.821..., 1.379...)
+
+    m = Model()
+
+    @defVar(m, 1 <= x[1:4] <= 5)
+
+    @setNLObjective(m, Min, x[1]*x[4]*(x[1]+x[2]+x[3]) + x[3])
+
+    #@addNLConstr(m??, x[1]*x[2]*x[3]*x[4] >= 25)
+    #@addNLConstr(m??, sum{x[i]^2,i=1:4} == 40)
+
+    JuMP.solveIpopt(m)
+
+    #getValue(x[1]) == 1.00000000
+    #getValue(x[2]) == 4.74299963
+    #getValue(x[3]) == 3.82114998
+    #getValue(x[4]) == 1.37940829
+end
