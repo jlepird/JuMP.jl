@@ -68,7 +68,7 @@ function solveIpopt(m::Model)
         end
     end
 
-    hmat, hfunc = gen_hessian_sparse_mat(nldata.nlobj)
+    hmat, hfunc = gen_hessian_sparse_color(nldata.nlobj)
 
     function eval_h(
         x::Vector{Float64},         # Current solution
