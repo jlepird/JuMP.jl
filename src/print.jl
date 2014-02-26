@@ -55,6 +55,9 @@ function print(io::IO, m::Model)
     for c in m.quadconstr
         println(io, conToStr(c))
     end
+    for c in m.sosconstr
+        println(io, conToStr(c))
+    end
 
     # Handle special case of indexed variables
     in_dictlist = zeros(Bool, m.numCols)
@@ -428,10 +431,10 @@ end
 
 ##########
 # JuMPDict
-show(io::IO, dict::JuMPDict) = print(io, dict)
-function print(io::IO, dict::JuMPDict)
+show(io::IO, dict::JuMPDict{Variable}) = print(io, dict)
+function print(io::IO, dict::JuMPDict{Variable})
     # Best case: bounds and all dims
-    str = dictstring(dict::JuMPDict, :REPL)
+    str = dictstring(dict, :REPL)
     if str != ""
         print(io, str)    
         return
@@ -447,7 +450,7 @@ function print(io::IO, dict::JuMPDict)
     name_and_indices, tail_str = dictnameindices(dict, :REPL)
     print(io, ".. \u2264 $(name_and_indices) \u2264 ..$(tail_str)")
 end
-function writemime(io::IO, ::MIME"text/latex", dict::JuMPDict)
+function writemime(io::IO, ::MIME"text/latex", dict::JuMPDict{Variable})
     # Best case: bounds and all dims
     str = dictstring(dict::JuMPDict, :IJulia)
     if str != ""
@@ -467,11 +470,11 @@ function writemime(io::IO, ::MIME"text/latex", dict::JuMPDict)
 end
 
 ###################
-# Linear Constraint
-print(io::IO, c::LinearConstraint) = print(io, conToStr(c))
-show(io::IO, c::LinearConstraint) = print(io, conToStr(c))
+# Linear Constraint (or rather, the general version of it)
+print(io::IO, c::GenericRangeConstraint) = print(io, conToStr(c))
+show(io::IO,  c::GenericRangeConstraint) = print(io, conToStr(c))
 
-function conToStr(c::LinearConstraint)
+function conToStr(c::GenericRangeConstraint)
     s = sense(c)
     if s == :range
         return string(c.lb," <= ",affToStr(c.terms,false)," <= ",c.ub)
@@ -486,6 +489,26 @@ print(io::IO, c::QuadConstraint) = print(io, conToStr(c))
 show(io::IO, c::QuadConstraint)  = print(io, conToStr(c))
 
 conToStr(c::QuadConstraint) = string(quadToStr(c.terms), " ", c.sense, " 0")
+
+################
+# SOS Constraint
+function conToStr(c::SOSConstraint) 
+    nvar = length(c.terms)
+    termStrings = Array(UTF8String, nvar+2)
+    termStrings[1] = "$(c.sostype): {"
+    if nvar > 0
+        termStrings[2] = "$(c.weights[1]) $(c.terms[1])"
+        for i in 2:nvar
+            termStrings[i+1] = ", $(c.weights[i]) $(c.terms[i])"
+        end
+    end
+    termStrings[end] = "}"
+    return join(termStrings)
+end
+
+print(io::IO, c::SOSConstraint) = print(io, conToStr(c))
+show(io::IO, c::SOSConstraint)  = print(io, conToStr(c))
+
 
 ################
 # Constraint Ref
