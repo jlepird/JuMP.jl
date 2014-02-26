@@ -1,5 +1,5 @@
 using JuMP
-
+using Base.Test
 # rosenbrock
 
 let
@@ -62,13 +62,18 @@ let
 
     @setNLObjective(m, Min, x[1]*x[4]*(x[1]+x[2]+x[3]) + x[3])
 
-    #@addNLConstr(m??, x[1]*x[2]*x[3]*x[4] >= 25)
-    #@addNLConstr(m??, sum{x[i]^2,i=1:4} == 40)
+    @addNLConstraint(m, x[1]*x[2]*x[3]*x[4] >= 25)
+    @addNLConstraint(m, sum{x[i]^2,i=1:4} == 40)
+
+    setValue(x[1],1.0)
+    setValue(x[2],5.0)
+    setValue(x[3],5.0)
+    setValue(x[4],1.0)
 
     JuMP.solveIpopt(m)
 
-    #getValue(x[1]) == 1.00000000
-    #getValue(x[2]) == 4.74299963
-    #getValue(x[3]) == 3.82114998
-    #getValue(x[4]) == 1.37940829
+    @test_approx_eq_eps getValue(x[1]) 1.00000000 1e-5
+    @test_approx_eq_eps getValue(x[2]) 4.74299963 1e-5
+    @test_approx_eq_eps getValue(x[3]) 3.82114998 1e-5
+    @test_approx_eq_eps getValue(x[4]) 1.37940829 1e-5
 end

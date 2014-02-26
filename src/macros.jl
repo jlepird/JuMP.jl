@@ -303,14 +303,52 @@ macro defConstrRef(var)
 end
 
 macro setNLObjective(m, sense, x)
+    m = esc(m)
     if sense == :Min || sense == :Max
         sense = Expr(:quote,sense)
     end
     quote
-        initNLP($(esc(m)))
-        setObjectiveSense($(esc(m)), $(esc(sense)))
+        initNLP($m)
+        setObjectiveSense($m, $(esc(sense)))
         ex = @processNLExpr($(esc(x)))
-        $(esc(m)).ext[:NLP].nlobj = ex
-        $(esc(m)).obj = QuadExpr()
+        $m.ext[:NLP].nlobj = ex
+        $m.obj = QuadExpr()
     end
 end 
+
+
+macro addNLConstraint(m, x)
+    m = esc(m)
+    if (x.head != :comparison)
+        error("Expected comparison operator in constraint $x")
+    end
+    if length(x.args) == 3 # simple comparison
+        lhs = :($(x.args[1]) - $(x.args[3])) # move everything to the lhs
+        id = hash(x)
+        op = x.args[2]
+        if op == :(==)
+            lb = 0.0
+            ub = 0.0
+        elseif op == :(<=)
+            lb = -Inf
+            ub = 0.0
+        else
+            @assert op == :(>=)
+            lb = 0.0
+            ub = Inf
+        end
+        quote
+            initNLP($m)
+            d = $m.ext[:NLP].nlconstr 
+            if !haskey(d, $id)
+                d[$id] = {}
+            end
+            c = NonlinearConstraint(@processNLExpr($(esc(lhs))), $lb, $ub)
+            push!(d[$id],c)
+            nothing
+        end
+    else
+        # ranged row
+        error("Two-sided nonlinear constraints not yet supported")
+    end
+end
