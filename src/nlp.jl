@@ -68,7 +68,7 @@ function solveIpopt(m::Model)
         end
     end
 
-    hmat, hfunc = gen_hessian_sparse_color(nldata.nlobj)
+    hI, hJ, hfunc = gen_hessian_sparse_color_parametric(nldata.nlobj)
 
     function eval_h(
         x::Vector{Float64},         # Current solution
@@ -80,24 +80,18 @@ function solveIpopt(m::Model)
         values::Vector{Float64})    # The values of the Hessian
 
         if mode == :Structure
-            # Convert column wise sparse to triple format
-            idx = 1
-            for col = 1:size(hmat,2)
-                for pos = hmat.colptr[col]:(hmat.colptr[col+1]-1)
-                    rows[idx] = hmat.rowval[pos]
-                    cols[idx] = col
-                    idx += 1
-                end
+            for i in 1:length(hI)
+                rows[i] = nldata.nlobj.mapfromcanonical[hI[i]]
+                cols[i] = nldata.nlobj.mapfromcanonical[hJ[i]]
             end
         else
-            hmat.nzval = values
-            hfunc(x, hmat)
-            scale!(hmat.nzval, obj_factor)
+            hfunc(x, values, nldata.nlobj)
+            scale!(values, obj_factor)
         end
     end
 
     prob = createProblem(m.numCols, m.colLower, m.colUpper, length(m.linconstr),
-        rowlb, rowub, length(A.nzval), length(hmat.nzval),
+        rowlb, rowub, length(A.nzval), length(hI),
         eval_f, eval_g, eval_grad_f, eval_jac_g, eval_h)
 
     if !any(isnan(m.colVal))
