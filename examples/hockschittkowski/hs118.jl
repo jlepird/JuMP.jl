@@ -97,7 +97,7 @@ setValue(x[15], 20.0)
 JuMP.solveIpopt(m)
 # solve(m)
 
-println(getValue(x))
+#println(getValue(x))
 
 @test_approx_eq_eps getValue(x[1]) 8.0  1e-5
 @test_approx_eq_eps getValue(x[2]) 49.0 1e-5

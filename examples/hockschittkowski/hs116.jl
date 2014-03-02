@@ -57,4 +57,4 @@ end
 
 JuMP.solveIpopt(m)
 
-@test_approx_eq_eps getObjectiveValue(m) 97.588409 1e-5
+@test_approx_eq_eps getObjectiveValue(m) 97.588409 1e-3
