@@ -12,7 +12,7 @@
 # http://www.ai7.uni-bayreuth.de/downloads.htm
 #
 # This problem has an objective with the logarithm of a fraction where both
-# the nominator and denominator have variables in them.
+# the nominator and denominator have variables in them. Constraints linear.
 #############################################################################
 
 using JuMP

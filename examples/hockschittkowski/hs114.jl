@@ -10,6 +10,9 @@
 #  Springer, No, 187, 1981 
 # More information, including original model description, at
 # http://www.ai7.uni-bayreuth.de/downloads.htm
+#
+# This problem has a quadratic objective with quadratic constraints as well
+# as a couple constraints that have fractions of variables.
 #############################################################################
 
 using JuMP

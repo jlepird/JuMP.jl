@@ -10,6 +10,8 @@
 #  Springer, No, 187, 1981 
 # More information, including original model description, at
 # http://www.ai7.uni-bayreuth.de/downloads.htm
+#
+# This problem has a linear objective with quadratic constraints.
 #############################################################################
 
 using JuMP
