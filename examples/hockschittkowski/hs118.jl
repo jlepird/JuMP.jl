@@ -25,7 +25,7 @@ end
         0.0001  * x[3*k+1]^2 + 
         1.7     * x[3*k+2]   +
         0.0001  * x[3*k+2]^2 +
-        2.2     * x[3*k+3]^2 +
+        2.2     * x[3*k+3] +
         0.00015 * x[3*k+3]^2, k=0:4})
 
 # setObjective(m, :Min, 
@@ -87,3 +87,4 @@ println(getValue(x))
 @test_approx_eq_eps getValue(x[2]) 49.0 1e-5
 @test_approx_eq_eps getValue(x[3]) 3.0  1e-5
 @test_approx_eq_eps getValue(x[4]) 1.0  1e-5
+@test_approx_eq_eps getObjectiveValue(m) 664.82045 1e-5
