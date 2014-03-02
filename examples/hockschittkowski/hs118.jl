@@ -87,3 +87,4 @@ println(getValue(x))
 @test_approx_eq_eps getValue(x[2]) 49.0 1e-5
 @test_approx_eq_eps getValue(x[3]) 3.0  1e-5
 @test_approx_eq_eps getValue(x[4]) 1.0  1e-5
+@test_approx_eq_eps getObjectiveValue(m) 664.82045 1e-5
