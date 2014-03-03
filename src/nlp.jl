@@ -23,7 +23,7 @@ function solveIpopt(m::Model)
             error("Integer variables present in nonlinear problem")
         end
     end
-
+    tic()
     @assert haskey(m.ext, :NLP)
     nldata = m.ext[:NLP]
     @assert isa(nldata.nlobj, ReverseDiffSparse.SymbolicOutput)
@@ -53,22 +53,30 @@ function solveIpopt(m::Model)
         nnz_hess += length(nldata.nlconstr[k])*length(constr_hessian[k][1])
         constr_grad[k] = genfgrad_parametric(nldata.nlconstr[k][1].terms)
     end
-
+    tprep = toq()
+    #println("Prep time: $tprep")
     tmpvec = Array(Float64, m.numCols)
+    tf, tgf, tg, tjg, th = zeros(5)
     function eval_f(x)
         #print("x = ");show(x);println()
         #println("f(x) = ", fg(x,tmpvec))
-        return fg(x,tmpvec)
+        tic()
+        v = fg(x,tmpvec)
+        tf += toq()
+        return v
     end
 
     function eval_grad_f(x, g)
+        tic()
         fg(x,g)
+        tgf += toq()
         #print("x = ");show(x);println()
         #println("gradf(x) = ");show(g);println()
     end
 
     function eval_g(x, g)
         #A_mul_B!(sub(g,size(A,1)),A,x)
+        tic()
         g[1:size(A,1)] = A*x
         pos = size(A,1)
         for k in keys(nldata.nlconstr)
@@ -77,6 +85,7 @@ function solveIpopt(m::Model)
                 g[pos] = constr_grad[k](x, ReverseDiffSparse.IdentityArray(), tmpvec, ReverseDiffSparse.IdentityArray(), c.terms.inputvals)
             end
         end
+        tg += toq()
         #print("x = ");show(x);println()
         #println(size(A,1), " g(x) = ");show(g);println()
     end
@@ -110,6 +119,7 @@ function solveIpopt(m::Model)
 
         else
             # Values
+            tic()
             fill!(values,0.0)
             idx = 1
             for col = 1:size(A,2)
@@ -128,6 +138,7 @@ function solveIpopt(m::Model)
                 end
             end
             @assert idx-1 == nnz_jac
+            tjg += toq()
             #print("x = ");show(x);println()
             #print("V ");show(values);println()
         end
@@ -163,6 +174,7 @@ function solveIpopt(m::Model)
             end
             @assert idx-1 == nnz_hess
         else
+            tic()
             hfunc(x, sub(values, 1:length(hI)), nldata.nlobj)
             scale!(sub(values, 1:length(hI)), obj_factor)
             idx = length(hI)+1
@@ -177,6 +189,7 @@ function solveIpopt(m::Model)
                 end
             end
             @assert idx-1 == nnz_hess
+            th += toq()
 
         end
     end
@@ -200,6 +213,8 @@ function solveIpopt(m::Model)
     println("STATUS: ", Ipopt.ApplicationReturnStatus[status])
     m.colVal = prob.x
     m.objVal = prob.obj_val
+
+    #println("feval $tf\nfgrad $tgf\ngeval $tg\njaceval $tjg\nhess $th")
 
 end
 
