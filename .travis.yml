@@ -17,11 +17,11 @@ before_install:
     - git config --global user.name "Travis User"
     - git config --global user.email "travis@example.net"
 script:
-    - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("JuMP"))`); Pkg.pin("JuMP"); Pkg.resolve()'
+    - julia -e 'Pkg.init(); Pkg.add("Ipopt"); Pkg.clone("https://github.com/mlubin/ReverseDiffSparse.jl.git")'
+    - julia -e 'run(`ln -s $(pwd()) $(Pkg.dir("JuMP"))`); Pkg.pin("JuMP"); Pkg.resolve()'
     - julia -e 'for p in split(ENV["PKGADD"],";") Pkg.add(p) end'
     - julia test/runtests.jl
     - julia test/hygiene.jl
-    - julia -e 'Pkg.add("Ipopt"); Pkg.clone("https://github.com/mlubin/ReverseDiffSparse.jl.git")'
     - julia test/hockschittkowski/runhs.jl
 
 
