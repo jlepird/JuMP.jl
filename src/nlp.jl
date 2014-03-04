@@ -75,9 +75,9 @@ function solveIpopt(m::Model)
     end
 
     function eval_g(x, g)
-        #A_mul_B!(sub(g,size(A,1)),A,x)
         tic()
-        g[1:size(A,1)] = A*x
+        A_mul_B!(sub(g,1:size(A,1)),A,x)
+        #g[1:size(A,1)] = A*x
         pos = size(A,1)
         for k in keys(nldata.nlconstr)
             for c in nldata.nlconstr[k]
